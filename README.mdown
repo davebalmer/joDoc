@@ -1,0 +1,116 @@
+joDoc
+=====
+
+joDoc is a plain text code documentation scheme for JavaScript. It was created out of
+frustration felt working with various documentation systems available. joDoc does not
+attempt to perform any special automation other than generating links, table of
+contents, an index, and of course rendered HTML for your documentation.
+
+> Note that joDoc is not ready for release, and some of the advanced features are still
+> in flux.
+
+Source code formatting
+----------------------
+
+This is a simple example of what you can do in your source documentation. This is all
+free-form markdown text.
+
+	/**
+		myClass
+		=======
+		
+		This is my class. It rocks, and this is its _description_, which also
+		rocks.
+		
+		Extends
+		-------
+
+		- someOtherClass
+		
+		Methods
+		-------
+
+		- setName(name)
+
+		  Where `name` is a `String`.
+		
+		Use
+		---
+			// here is some sample code which shows how to use this class
+			var x = new myClass(name);
+		
+		> Note: use of the `name` reserved word is probaly a bad idea.
+	*/
+
+
+Comment placement
+-----------------
+
+You can put your comments for your code either:
+
+1. in your source code (anywhere and in as many pieces as you want) denoted with
+   `/**  ... */` multiline-comment blocks
+
+2. separate markdown (`*.mdown`) files, probably (tho not necessarily) named to
+   match your JavaScript files
+
+Can't get much more flexible than that.
+
+
+Requirements
+------------
+
+1. perl 5.4+
+2. markdown.pl (or compatible parser)
+
+> Windows users should get some suggestions for installing ActiveState or cygwin
+
+
+Use
+---
+
+	jodoc [--output path] [--toc file] [--markdown file] [filespec]
+
+- `--output path`
+  specify a path to where you want doc files placed
+
+- `--toc file`
+
+  joDoc will work with a table of contents config file, which is
+  basically a list of file(s) in the order you want them parsed. Wildcards are
+  supported, and indentation denotes content structure (more to come, this is
+  still being designed).
+
+- `--markdown file`
+
+  tells joDoc to use a specific markdown parser.
+
+- `filespec`
+
+  is one or more files to parse, wildcards are supported.
+
+
+Examples
+--------
+
+Simple case:
+
+	jodoc
+
+By default, joDoc will start in the current directory and recursively look for
+`*.mdown`, `.*.js` and `*.css` files to build documentation. Unless directed
+otherwise, joDoc will create a `./jodoc` directory with all the documentation
+output.
+
+Specifying an output base directory:
+
+	jodoc --output /var/www/html/docs
+
+Specifying files to parse:
+
+	jodoc ABOUT *.js *.css
+
+Defining a table of contents structure:
+
+	jodoc --content ~/release.toc
+
