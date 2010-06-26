@@ -120,7 +120,7 @@ sub markdown_pipe {
 }
 
 # If not specified, find a markdown parser in the path
-chomp( $markdown_bin = qx(command -v markdown) ) unless $markdown_bin;
+chomp( $markdown_bin = qx(which markdown) ) unless $markdown_bin;
 
 # We can't do anything if we can't call markdown
 die "Markdown parser not found!\n" unless ( -x $markdown_bin );
