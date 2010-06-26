@@ -13,7 +13,7 @@ GetOptions(
     "markdown=s" => \$markdown_bin,
     "output=s"   => \$outputdir,
     "toc=s"      => \$toc
-);
+) or die;
 
 die "You need to specify an output directory for a table of contents!\n"
   if ( $toc && !defined($outputdir) );
