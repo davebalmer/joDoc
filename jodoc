@@ -101,7 +101,7 @@ s{(\<a)\s+(href=\"http|href=\"mailto|href=\"ftp)}{$1 class=\"external\" $2}g;
             $index .= "\n<ul>\n";
             $lastletter = $letter;
         }
-        $index .= qq(<li><a href=#$i>$i</a></li>\n);
+        $index .= qq(<li><a href="#$i">$i</a></li>\n);
     }
     $index .= "</ul></div>\n\n";
     return ( $input, $index );
