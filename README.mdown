@@ -69,9 +69,10 @@ Requirements
 Use
 ---
 
-	jodoc [--output path] [--toc file] [--markdown file] [filespec]
+	jodoc [--output path] [--title string] [--toc file] [--markdown file] [filespec]
 
 - `--output path`
+
   specify a path to where you want doc files placed
 
 - `--toc file`
@@ -84,6 +85,10 @@ Use
 - `--markdown file`
 
   tells joDoc to use a specific markdown parser.
+
+- `--title string`
+
+  is an optional title which will appear on your HTML output.
 
 - `filespec`
 

@@ -8,15 +8,20 @@ use IPC::Open2;
 # parse the input options
 my $markdown_bin;
 my $outputdir;
+my $title;
 my $toc;
 GetOptions(
     "markdown=s" => \$markdown_bin,
     "output=s"   => \$outputdir,
+    "title=s"    => \$title,
     "toc=s"      => \$toc
 ) or die;
 
-die "You need to specify an output directory for a table of contents!\n"
-  if ( $toc && !defined($outputdir) );
+die "You need to specify a config file for a table of contents.\n"
+	if ( $toc && !defined($outputdir) );
+
+$title = "joDoc"
+	unless (defined($title));
 
 warn "--toc doesn't do anything yet!\n" if $toc;
 
@@ -37,9 +42,12 @@ sub docker {
 # put a nice header on the html output
 sub html_head {
     my $input = shift;
-
     #my $title = shift;
-    my $title  = "Jo JavaScript Application Framework for HTML5";
+    my $title = shift;
+
+	# TODO: needs to support header/footer HTML templates at a minimum.
+	# we could use a formal templating system, but for initial release
+	# let's keep it simple
     my $output = qq(
     <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 
@@ -54,12 +62,9 @@ sub html_head {
     <meta name="format-detection" content="false">
     </head>
     <body>
-    <cite>Jo<cite>JavaScript App Framework</cite></cite>
 
     $input
 
-    <br>
-    <cite><cite>Jo</cite></cite>
     </body>
     </html>);
     return $output;
@@ -154,7 +159,7 @@ for my $file (@ARGV) {
 # TODO: make a proper hierarchy of files, for now just print out one html file
 my $outstring = join( "\n", ( values %processed ) );
 $outstring = join( "", autolink($outstring) );
-$outstring = html_head($outstring);
+$outstring = html_head($outstring, $title);
 if ($outputdir) {
     mkdir $outputdir;
     open( my $fh, '>', $outputdir . "/index.html" ) or die $!;
