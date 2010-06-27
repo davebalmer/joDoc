@@ -1,3 +1,13 @@
+/**
+	doc.css
+	=======
+
+	Requires `docbody.css`, which is split with the intention of using
+	documentation in a jo app without messing with the `body` definition
+	in the app.
+
+	Support for printed media is included for generating nice PDF files.
+*/
 p {
 	text-align: left;
 }
@@ -11,12 +21,10 @@ p {
 	font-size: 20px;
 }
 
+/* using `<cite>` for pretty titles */
 cite {
 	position: relative;
 	line-height: .9;
-	background: #36D2CF;
-	background: #00a9a7;
-	background: #2ecbbe;
 	background: #07c7c3;
 	display: block;
 	text-align: right;
@@ -62,12 +70,6 @@ ul {
 	margin-right: 50px;
 }
 
-/*
-ul li li {
-	font-size: 92%;
-}
-*/
-
 img {
 	display: block;
 	margin: 2em auto;
@@ -79,9 +81,7 @@ blockquote {
 	color: #9e9fa3;
 	position: relative;
 	margin: 1.5em 30px;
-/*	border: 1px solid #666; */
 	padding: 10px 10px 0 10px;
-/*	-webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, .5); */
 }
 blockquote:before {
 	font-style: normal;
@@ -111,12 +111,7 @@ blockquote code {
 }
 
 h1 {
-/*	font-family: "Palatino", "Georgia", "Times New Roman"; */
 	margin-top: 0;
- 	color: #3b5998;
-	color: #36D2CF;
-	color: #00a9a7;
-	color: #2ecbbe;
 	color: #07c7c3;
 	font-size: 38px;
 	font-weight: normal;
@@ -179,6 +174,7 @@ a[href] {
 	-o-transition: background .2s ease-out, -webkit-box-shadow .1s ease-out, color .15s ease-out;
 }
 
+/* puts an * after external links, jodoc designates with .external */
 a[href].external:after {
 	content: "*";
 	font-style: super;
@@ -188,8 +184,6 @@ a[href].external:after {
 a[href]:hover {
 	background: rgba(0, 0, 0, .6);
 	color: #fff;
-/*	text-shadow: 0 0 3px rgba(0, 0, 0, .6); */
-/*	-webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, .4); */
 }
 
 pre code a[href], code a[href] {
@@ -199,6 +193,11 @@ pre code a[href], code a[href] {
 	border-radius: 0;
 }
 
+/*
+	vanilla markdown doesn't support tables, but since you can
+	pass HTML through it, may as well put some nice styling for
+	them in the CSS.
+*/
 table {
 	width: 100%;
 	margin: 1em auto;
@@ -234,6 +233,7 @@ td:first {
 	border-left: 1px solid #0d0d0d;
 }
 
+/* <hr> is used as a page separator in markdown */
 hr {
 	border: none;
 	height: 70px;
@@ -269,7 +269,7 @@ hr:before {
 	list-style: none;
 }
 
-
+/* pretty printing */
 @media print {
 	body {
 		max-width: none;
@@ -318,15 +318,3 @@ hr:before {
 	}
 }
 
-/*
-#index ul a[href] {
-	padding: 0;
-	-webkit-border-radius: 0;
-	-moz-border-radius: 0;
-	border-radius: 0;
-	background: transparent;
-}
-#index ul a:hover {
-	background: rgba(0, 0, 0, .6);
-}
-*/
