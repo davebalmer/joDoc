@@ -17,7 +17,7 @@ GetOptions(
     "toc=s"      => \$toc
 ) or die;
 
-die "You need to specify a config file for a table of contents.\n"
+die "You also need to specify an output directory if you use --toc.\n"
 	if ( $toc && !defined($outputdir) );
 
 $title = "joDoc"
