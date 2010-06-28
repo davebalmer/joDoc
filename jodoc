@@ -149,7 +149,8 @@ die "Markdown parser not found!\n" unless ( -x $markdown_bin );
 my %processed = ();
 
 # recurse current directory if no input arguments
-my @files = @ARGV or glob("./*");
+my @files = @ARGV;
+@files = glob("./*") unless ( $ARGV[0] );
 for my $file (@files) {
     unless ( -e $file ) {
         warn "$file not found!\n";
