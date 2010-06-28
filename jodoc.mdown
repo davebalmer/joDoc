@@ -1,0 +1,14 @@
+JoDoc - Javascript Documenter
+---
+
+Takes in files and passes them through markdown in a consistent manner
+
+JoDoc options:
+
+* --toc, print out a table of contents into a specified file in --output
+
+* --output, a folder to put the output into
+
+* --markdown, specify a markdown processor
+
+* --title, specify a title for the output HTML
