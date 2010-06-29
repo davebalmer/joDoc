@@ -91,15 +91,18 @@ sub autolink {
             if ($outputdir) {
                 $input =~
 s/{(\W+)($keys)(?!\<\/a|\w+)/$1\<a href=\"$h1s{$2}\#$2\"\>$2\<\/a\>/g;
+
+                # make a #tag for the keyword h1 tag
+                $input =~ s/\<h1\>\<a href=\"$h1s{$2}\#$2/\<h1\>\<a name=\"$2/g;
             }
             else {
 
                 $input =~
                   s/{(\W+)($keys)(?!\<\/a|\w+)/$1\<a href=\"\#$2\"\>$2\<\/a\>/g;
-            }
 
-            # make a #tag for the keyword h1 tag
-            $input =~ s{\<h1\>\<a href=\"\#}{\<h1\>\<a name=\"}g;
+                # make a #tag for the keyword h1 tag
+                $input =~ s/\<h1\>\<a href=\"\#/\<h1\>\<a name=\"/g;
+            }
 
             my $index      = qq(\n\n<hr>\n\n<h1>Index</h1>\n<div id="index">\n);
             my $lastletter = "ZZ";
@@ -159,68 +162,73 @@ sub h1finder {
     return %h1s_to_file;
 }
 
-# If not specified, find a markdown parser in the path
-chomp( $markdown_bin = qx(which markdown) ) unless $markdown_bin;
+sub main {
 
-# We can't do anything if we can't call markdown
-die "Markdown parser not found!\n" unless ( -x $markdown_bin );
+    # If not specified, find a markdown parser in the path
+    chomp( $markdown_bin = qx(which markdown) ) unless $markdown_bin;
 
-# Slurp all the files and process them
-# recurse current directory if no input arguments
-my @files = @ARGV;
-@files = glob("./*") unless ( $ARGV[0] );
-for my $file (@files) {
-    unless ( -e $file ) {
-        warn "$file not found!\n";
-        next;
+    # We can't do anything if we can't call markdown
+    die "Markdown parser not found!\n" unless ( -x $markdown_bin );
+
+    # Slurp all the files and process them
+    # recurse current directory if no input arguments
+    my @files = @ARGV;
+    @files = glob("./*") unless ( $ARGV[0] );
+    for my $file (@files) {
+        unless ( -e $file ) {
+            warn "$file not found!\n";
+            next;
+        }
+
+        # recurse
+        if ( -d $file ) {
+            my @subdir = glob("$file/*");
+            push( @files, @subdir );
+            next;
+        }
+        my $content;
+        open( my $fh, '<', $file ) or die $!;
+        {
+            local $/;
+            $content = <$fh>;
+        }
+        close $fh or die $!;
+
+        # javascript and css files get "cleaned"
+        if ( $file =~ m{\.(js|css)$} ) {
+            $content = docker($content);
+        }
+
+        # pure htmlfiles don't have markdown applied
+        unless ( $file =~ m{\.html$} ) {
+            $content = markdown_pipe($content);
+        }
+        $file .= ".html";
+        $processed{$file} = $content;
+    }
+    %h1s = h1finder;
+    autolink;
+
+    # Print docs to separate files in the same hierarchy as the input
+    if ($outputdir) {
+        mkdir $outputdir;
+        for my $file ( keys %processed ) {
+            my @path_parts = split( /\//, $file );
+            pop @path_parts;
+            my $path = join( '/', @path_parts );
+
+            # mkdir -p $outputdir/$path
+            make_path( $outputdir . '/' . $path );
+            open( my $fh, '>', $outputdir . '/' . $file ) or die $!;
+            print $fh html_head( $processed{$file} );
+            close $fh or die;
+        }
     }
 
-    # recurse
-    if ( -d $file ) {
-        my @subdir = glob("$file/*");
-        push( @files, @subdir );
-        next;
+    # Print to stdout
+    else {
+        print html_head( join( "", values %processed ) );
     }
-    my $content;
-    open( my $fh, '<', $file ) or die $!;
-    {
-        local $/;
-        $content = <$fh>;
-    }
-    close $fh or die $!;
-
-    # javascript and css files get "cleaned"
-    if ( $file =~ m{\.(js|css)$} ) {
-        $content = docker($content);
-    }
-
-    # pure htmlfiles don't have markdown applied
-    unless ( $file =~ m{\.html$} ) {
-        $content = markdown_pipe($content);
-    }
-    $file .= ".html";
-    $processed{$file} = $content;
 }
-%h1s = h1finder;
-autolink;
 
-# Print docs to separate files in the same hierarchy as the input
-if ($outputdir) {
-    mkdir $outputdir;
-    for my $file ( keys %processed ) {
-        my @path_parts = split( /\//, $file );
-        pop @path_parts;
-        my $path = join( '/', @path_parts );
-
-        # mkdir -p $outputdir/$path
-        make_path( $outputdir . '/' . $path );
-        open( my $fh, '>', $outputdir . '/' . $file ) or die $!;
-        print $fh html_head( $processed{$file} );
-        close $fh or die;
-    }
-}
-
-# Print to stdout
-else {
-    print html_head( join( "", values %processed ) );
-}
+main;
