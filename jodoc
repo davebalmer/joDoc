@@ -94,6 +94,7 @@ s/(\W+)($keys)(?!\<\/a|\w+)/$1\<a href=\"$h1s{$2}\#$2\"\>$2\<\/a\>/g;
 
                 # make a #tag for the keyword h1 tag
                 $input =~ s/\<h1\>\<a href=\"$h1s{$2}\#$2/\<h1\>\<a name=\"$2/g;
+                $processed{$file} = $input . indexer( \@keywords, $file );
             }
             else {
 
@@ -103,27 +104,7 @@ s/(\W+)($keys)(?!\<\/a|\w+)/$1\<a href=\"$h1s{$2}\#$2\"\>$2\<\/a\>/g;
                 # make a #tag for the keyword h1 tag
                 $input =~ s/\<h1\>\<a href=\"\#/\<h1\>\<a name=\"/g;
             }
-
-            my $index      = qq(\n\n<hr>\n\n<h1>Index</h1>\n<div id="index">\n);
-            my $lastletter = "ZZ";
-
-            # Make an alphasorted index
-            for my $i ( sort { lc($a) cmp lc($b) }
-                grep { $file eq $h1s{$_} } @keywords )
-            {
-                my $letter = uc( substr( $i, 0, 1 ) );
-                if ( $letter ne $lastletter ) {
-                    if ( $lastletter ne "ZZ" ) {
-                        $index .= "</ul>\n";
-                    }
-                    $index .= "\n<h2>$letter</h2>\n";
-                    $index .= "\n<ul>\n";
-                    $lastletter = $letter;
-                }
-                $index .= qq(<li><a href="$h1s{$i}#$i">$i</a></li>\n);
-            }
-            $index .= "</ul></div>\n\n";
-            $processed{$file} = $input . $index;
+            $processed{$file} = $input;
         }
         else {
 
@@ -131,6 +112,41 @@ s/(\W+)($keys)(?!\<\/a|\w+)/$1\<a href=\"$h1s{$2}\#$2\"\>$2\<\/a\>/g;
             $processed{$file} = $input;
         }
     }
+}
+
+# Make an alphasorted index
+sub indexer {
+    my $keywords_ref = shift;
+    my @keywords     = @{$keywords_ref};
+    my $file         = shift;
+
+    # filter by filename
+    @keywords =
+      sort { lc($a) cmp lc($b) }
+      grep { !defined($file) || ( $file eq $h1s{$_} ) } @keywords;
+    my $index      = qq(\n\n<hr>\n\n<h1>Index</h1>\n<div id="index">\n);
+    my $lastletter = "ZZ";
+
+    for my $i (@keywords) {
+        my $letter = uc( substr( $i, 0, 1 ) );
+        if ( $letter ne $lastletter ) {
+            if ( $lastletter ne "ZZ" ) {
+                $index .= "</ul>\n";
+            }
+            $index .= "\n<h2>$letter</h2>\n";
+            $index .= "\n<ul>\n";
+            $lastletter = $letter;
+        }
+        if ($outputdir) {
+            $index .= qq(<li><a href="$h1s{$i}#$i">$i</a></li>\n);
+        }
+        else {
+            $index .= qq(<li><a href="#$i">$i</a></li>\n);
+        }
+
+    }
+    $index .= "</ul></div>\n\n";
+    return $index;
 }
 
 # Pipe stuff through markdown for parsing
@@ -203,7 +219,7 @@ sub main {
 
         # pure htmlfiles don't have markdown applied
         unless ( $file =~ m{\.html$} ) {
-            $content = markdown_pipe($content);
+            $content = markdown_pipe( $content . "\n - - -\n" );
         }
         $file .= ".html";
         $processed{$file} = $content;
@@ -229,7 +245,9 @@ sub main {
 
     # Print to stdout
     else {
-        print html_head( join( "", values %processed ) );
+        my @keywords = keys %h1s;
+        print html_head(
+            join( "", values %processed ) . indexer( \@keywords ) );
     }
 }
 
