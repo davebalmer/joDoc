@@ -204,25 +204,28 @@ sub main {
             push( @files, @subdir );
             next;
         }
-        my $content;
-        open( my $fh, '<', $file ) or die $!;
-        {
-            local $/;
-            $content = <$fh>;
-        }
-        close $fh or die $!;
 
-        # javascript and css files get "cleaned"
-        if ( $file =~ m{\.(js|css)$} ) {
-            $content = docker($content);
-        }
+        if ( $file =~ m{\.(js|css|mdown|html|md|markdown|htm)$}i ) {
+            my $content;
+            open( my $fh, '<', $file ) or die $!;
+            {
+                local $/;
+                $content = <$fh>;
+            }
+            close $fh or die $!;
 
-        # pure htmlfiles don't have markdown applied
-        unless ( $file =~ m{\.html$} ) {
-            $content = markdown_pipe( $content . "\n - - -\n" );
+            # javascript and css files get "cleaned"
+            if ( $file =~ m{\.(js|css)$} ) {
+                $content = docker($content);
+            }
+
+            # pure htmlfiles don't have markdown applied
+            unless ( $file =~ m{\.html$} ) {
+                $content = markdown_pipe($content);
+            }
+            $file .= ".html";
+            $processed{$file} = $content;
         }
-        $file .= ".html";
-        $processed{$file} = $content;
     }
     %h1s = h1finder;
     autolink;
