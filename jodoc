@@ -93,7 +93,7 @@ sub autolink {
 s/(\W+)($keys)(?!\<\/a|\w+)/$1\<a href=\"$h1s{$2}\#$2\"\>$2\<\/a\>/g;
 
                 # make a #tag for the keyword h1 tag
-                $input =~ s/\<h1\>\<a href=\"$h1s{$2}\#$2/\<h1\>\<a name=\"$2/g;
+                $input =~ s/\<h1\>\<a href=\"[^\#\>]*\#/\<h1\>\<a name=\"/g;
                 $processed{$file} = $input . indexer( \@keywords, $file );
             }
             else {
@@ -103,8 +103,8 @@ s/(\W+)($keys)(?!\<\/a|\w+)/$1\<a href=\"$h1s{$2}\#$2\"\>$2\<\/a\>/g;
 
                 # make a #tag for the keyword h1 tag
                 $input =~ s/\<h1\>\<a href=\"\#/\<h1\>\<a name=\"/g;
+                $processed{$file} = $input;
             }
-            $processed{$file} = $input;
         }
         else {
 
@@ -123,7 +123,8 @@ sub indexer {
     # filter by filename
     @keywords =
       sort { lc($a) cmp lc($b) }
-      grep { !defined($file) || ( $file eq $h1s{$_} ) } @keywords;
+      grep { ( $file eq $h1s{$_} ) } @keywords
+      if $file;
     my $index      = qq(\n\n<hr>\n\n<h1>Index</h1>\n<div id="index">\n);
     my $lastletter = "ZZ";
 
@@ -223,7 +224,10 @@ sub main {
             unless ( $file =~ m{\.html$} ) {
                 $content = markdown_pipe($content);
             }
-            $file .= ".html";
+            my @path_parts = split( /\//, $file );
+            s{\.+}{_}g for @path_parts;
+            my $path = join( '_', @path_parts );
+            $file = $path . '.html';
             $processed{$file} = $content;
         }
     }
@@ -234,12 +238,6 @@ sub main {
     if ($outputdir) {
         mkdir $outputdir;
         for my $file ( keys %processed ) {
-            my @path_parts = split( /\//, $file );
-            pop @path_parts;
-            my $path = join( '/', @path_parts );
-
-            # mkdir -p $outputdir/$path
-            make_path( $outputdir . '/' . $path );
             open( my $fh, '>', $outputdir . '/' . $file ) or die $!;
             print $fh html_head( $processed{$file} );
             close $fh or die;
