@@ -4,12 +4,16 @@ use strict;
 use warnings;
 use Getopt::Long;
 use IPC::Open2;
+use File::Path qw(make_path);
 
 # parse the input options
 my $markdown_bin;
 my $outputdir;
 my $title;
 my $toc;
+my %h1s;
+my %processed = ();
+
 GetOptions(
     "markdown=s" => \$markdown_bin,
     "output=s"   => \$outputdir,
@@ -20,8 +24,7 @@ GetOptions(
 die "You need to also specify --output if you use --toc.\n"
   if ( $toc && !defined($outputdir) );
 
-$title = "joDoc"
-  unless ( defined($title) );
+$title = "joDoc" unless ( defined($title) );
 
 warn "--toc doesn't do anything yet!\n" if $toc;
 
@@ -42,9 +45,6 @@ sub docker {
 # put a nice header on the html output
 sub html_head {
     my $input = shift;
-
-    #my $title = shift;
-    my $title = shift;
 
     # TODO: needs to support header/footer HTML templates at a minimum.
     # we could use a formal templating system, but for initial release
@@ -71,53 +71,59 @@ sub html_head {
     return $output;
 }
 
-# link together all the html output, make an index at the bottom
+# link together all the html output, make an index at the bottom of each page
+# will link between all files in the output
 sub autolink {
-    my $input    = shift;
-    my @keywords = ();
+    for my $file ( keys %processed ) {
+        my $input = $processed{$file};
 
-    # find all the h1 tags, make them link to each other
-    while ( $input =~ m{\<h1\>([^\<]+)\<\/h1\>}g ) {
-        unshift( @keywords, $1 );
-    }
+        # put an external css class on outbound links
+        $input =~
+          s{(\<a)\s+(href=\"(?:http|mailto|ftp))}{$1 class=\"external\" $2}g;
+        my @keywords = keys %h1s;
+        if (@keywords) {
 
-    # put an external css class on outbound links
-    $input =~
-s{(\<a)\s+(href=\"http|href=\"mailto|href=\"ftp)}{$1 class=\"external\" $2}g;
-    if (@keywords) {
+            # prepare for the regex
+            my $keys = join( "|", @keywords );
 
-        # prepare for the regex
-        my $keys = join( "|", @keywords );
-
-        # make anything refing a keywork link to it
-        $input =~ s{(\W+)($keys)(?!\<\/a|\w+)}{$1\<a href=\"\#$2\"\>$2\<\/a\>}g;
-
-        # make a #tag for the keyword h1 tag
-        $input =~ s{\<h1\>\<a href=\"\#}{\<h1\>\<a name=\"}g;
-
-        my $index      = qq(\n\n<hr>\n\n<h1>Index</h1>\n<div id="index">\n);
-        my $lastletter = "ZZ";
-
-        # Make an alphasorted index
-        for my $i ( sort { lc($a) cmp lc($b) } @keywords ) {
-            my $letter = uc( substr( $i, 0, 1 ) );
-            if ( $letter ne $lastletter ) {
-                if ( $lastletter ne "ZZ" ) {
-                    $index .= "</ul>\n";
-                }
-                $index .= "\n<h2>$letter</h2>\n";
-                $index .= "\n<ul>\n";
-                $lastletter = $letter;
+            # make anything refing a keywork link to it
+            if ($outputdir) {
+                $input =~
+s/{(\W+)($keys)(?!\<\/a|\w+)/$1\<a href=\"$h1s{$2}\#$2\"\>$2\<\/a\>/g;
             }
-            $index .= qq(<li><a href="#$i">$i</a></li>\n);
-        }
-        $index .= "</ul></div>\n\n";
-        return ( $input, $index );
-    }
-    else {
+            else {
 
-        # no index if there are no h1 tags
-        return $input unless @keywords;
+                $input =~
+                  s/{(\W+)($keys)(?!\<\/a|\w+)/$1\<a href=\"\#$2\"\>$2\<\/a\>/g;
+            }
+
+            # make a #tag for the keyword h1 tag
+            $input =~ s{\<h1\>\<a href=\"\#}{\<h1\>\<a name=\"}g;
+
+            my $index      = qq(\n\n<hr>\n\n<h1>Index</h1>\n<div id="index">\n);
+            my $lastletter = "ZZ";
+
+            # Make an alphasorted index
+            for my $i ( sort { lc($a) cmp lc($b) } @keywords ) {
+                my $letter = uc( substr( $i, 0, 1 ) );
+                if ( $letter ne $lastletter ) {
+                    if ( $lastletter ne "ZZ" ) {
+                        $index .= "</ul>\n";
+                    }
+                    $index .= "\n<h2>$letter</h2>\n";
+                    $index .= "\n<ul>\n";
+                    $lastletter = $letter;
+                }
+                $index .= qq(<li><a href="#$i">$i</a></li>\n);
+            }
+            $index .= "</ul></div>\n\n";
+            $processed{$file} = $input . $index;
+        }
+        else {
+
+            # no index if there are no h1 tags
+            $processed{$file} = $input;
+        }
     }
 }
 
@@ -130,12 +136,26 @@ sub markdown_pipe {
     # The magic here is what you expect open(HANDLE, "| $markdown_bin |") to do.
     my $pid = open2( my $chld_out, my $chld_in, $markdown_bin ) or die $!;
     print $chld_in $in;
-    close $chld_in;
+    close $chld_in or die $!;
     while (<$chld_out>) {
         push( @out, $_ );
     }
-    close $chld_out;
+    close $chld_out or die $!;
     return join( "", @out );
+}
+
+# Find all the h1tags for all files
+sub h1finder {
+    my %h1s_to_file = ();
+    for my $file ( keys %processed ) {
+        my @h1      = ();
+        my $content = $processed{$file};
+        while ( $content =~ m{\<h1\>([^\<]+)\<\/h1\>}g ) {
+            push( @h1, $1 );
+        }
+        $h1s_to_file{$_} = $file for @h1;
+    }
+    return %h1s_to_file;
 }
 
 # If not specified, find a markdown parser in the path
@@ -145,8 +165,6 @@ chomp( $markdown_bin = qx(which markdown) ) unless $markdown_bin;
 die "Markdown parser not found!\n" unless ( -x $markdown_bin );
 
 # Slurp all the files and process them
-my %processed = ();
-
 # recurse current directory if no input arguments
 my @files = @ARGV;
 @files = glob("./*") unless ( $ARGV[0] );
@@ -179,19 +197,29 @@ for my $file (@files) {
     unless ( $file =~ m{\.html$} ) {
         $content = markdown_pipe($content);
     }
+    $file .= ".html";
     $processed{$file} = $content;
 }
+%h1s = h1finder;
+autolink;
 
-# TODO: make a proper hierarchy of files, for now just print out one html file
-my $outstring = join( "\n", ( values %processed ) );
-$outstring = join( "", autolink($outstring) );
-$outstring = html_head( $outstring, $title );
+# Print docs to separate files in the same hierarchy as the input
 if ($outputdir) {
     mkdir $outputdir;
-    open( my $fh, '>', $outputdir . "/index.html" ) or die $!;
-    print $fh $outstring;
-    close $fh or die $!;
+    for my $file ( keys %processed ) {
+        my @path_parts = split( /\//, $file );
+        pop @path_parts;
+        my $path = join( '/', @path_parts );
+
+        # mkdir -p $outputdir/$path
+        make_path( $outputdir . '/' . $path );
+        open( my $fh, '>', $outputdir . '/' . $file ) or die $!;
+        print $fh html_head( $processed{$file} );
+        close $fh or die;
+    }
 }
+
+# Print to stdout
 else {
-    print $outstring;
+    print html_head( join( "", values %processed ) );
 }
