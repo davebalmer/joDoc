@@ -79,14 +79,14 @@ sub autolink {
 
         # put an external css class on outbound links
         $input =~
-          s{(\<a)\s+(href=\"(?:http|mailto|ftp))}{$1 class=\"external\" $2}g;
+          s{(\<a)\s+(href=\"(?:https|http|mailto|ftp))}{$1 class=\"external\" $2}g;
         my @keywords = keys %h1s;
         if (@keywords) {
 
             # prepare for the regex
             my $keys = join( "|", @keywords );
 
-            # make anything refing a keywork link to it
+            # make anything refing a keyword link to it
             if ($outputdir) {
                 $input =~
 s/{(\W+)($keys)(?!\<\/a|\w+)/$1\<a href=\"$h1s{$2}\#$2\"\>$2\<\/a\>/g;
@@ -100,24 +100,7 @@ s/{(\W+)($keys)(?!\<\/a|\w+)/$1\<a href=\"$h1s{$2}\#$2\"\>$2\<\/a\>/g;
             # make a #tag for the keyword h1 tag
             $input =~ s{\<h1\>\<a href=\"\#}{\<h1\>\<a name=\"}g;
 
-            my $index      = qq(\n\n<hr>\n\n<h1>Index</h1>\n<div id="index">\n);
-            my $lastletter = "ZZ";
-
-            # Make an alphasorted index
-            for my $i ( sort { lc($a) cmp lc($b) } @keywords ) {
-                my $letter = uc( substr( $i, 0, 1 ) );
-                if ( $letter ne $lastletter ) {
-                    if ( $lastletter ne "ZZ" ) {
-                        $index .= "</ul>\n";
-                    }
-                    $index .= "\n<h2>$letter</h2>\n";
-                    $index .= "\n<ul>\n";
-                    $lastletter = $letter;
-                }
-                $index .= qq(<li><a href="#$i">$i</a></li>\n);
-            }
-            $index .= "</ul></div>\n\n";
-            $processed{$file} = $input . $index;
+            $processed{$file} = $input;
         }
         else {
 
@@ -125,6 +108,29 @@ s/{(\W+)($keys)(?!\<\/a|\w+)/$1\<a href=\"$h1s{$2}\#$2\"\>$2\<\/a\>/g;
             $processed{$file} = $input;
         }
     }
+}
+
+sub build_index {
+	my @keywords = keys %h1s;
+	my $index      = qq(\n\n<hr>\n\n<h1>Index</h1>\n<div id="index">\n);
+	my $lastletter = "ZZ";
+
+	# Make an alphasorted index
+	for my $i ( sort { lc($a) cmp lc($b) } @keywords ) {
+		my $letter = uc( substr( $i, 0, 1 ) );
+		if ( $letter ne $lastletter ) {
+			if ( $lastletter ne "ZZ" ) {
+				$index .= "</ul>\n";
+			}
+			$index .= "\n<h2>$letter</h2>\n";
+			$index .= "\n<ul>\n";
+			$lastletter = $letter;
+		}
+		$index .= qq(<li><a href="#$i">$i</a></li>\n);
+	}
+	$index .= "</ul></div>\n\n";
+
+	return $index;
 }
 
 # Pipe stuff through markdown for parsing
@@ -181,30 +187,35 @@ for my $file (@files) {
         next;
     }
     my $content;
-    open( my $fh, '<', $file ) or die $!;
-    {
-        local $/;
-        $content = <$fh>;
-    }
-    close $fh or die $!;
 
-    # javascript and css files get "cleaned"
-    if ( $file =~ m{\.(js|css)$} ) {
-        $content = docker($content);
-    }
+	if ($file =~ m{\.(css|js|md|mdown|markdown|html|htm)$}i) {
+		open( my $fh, '<', $file ) or die $!;
+		{
+			local $/;
+			$content = <$fh>;
+		}
+		close $fh or die $!;
 
-    # pure htmlfiles don't have markdown applied
-    unless ( $file =~ m{\.html$} ) {
-        $content = markdown_pipe($content);
-    }
-    $file .= ".html";
-    $processed{$file} = $content;
+		# javascript and css files get "cleaned"
+		if ( $file =~ m{\.(js|css)$} ) {
+			$content = docker($content);
+		}
+
+		# pure htmlfiles don't have markdown applied
+		unless ( $file =~ m{\.html$} ) {
+			$content = markdown_pipe($content);
+		}
+
+		$file .= ".html";
+		$processed{$file} = $content;
+	}
 }
+
 %h1s = h1finder;
 autolink;
 
-# Print docs to separate files in the same hierarchy as the input
 if ($outputdir) {
+	# Print docs to separate files in the same hierarchy as the input
     mkdir $outputdir;
     for my $file ( keys %processed ) {
         my @path_parts = split( /\//, $file );
@@ -212,14 +223,19 @@ if ($outputdir) {
         my $path = join( '/', @path_parts );
 
         # mkdir -p $outputdir/$path
+		# FIXME: we want the output directory to be flat, and not use
+		# any path info, just the filename
         make_path( $outputdir . '/' . $path );
         open( my $fh, '>', $outputdir . '/' . $file ) or die $!;
         print $fh html_head( $processed{$file} );
         close $fh or die;
     }
+	open(my $fh, '>', $outputdir . '/_index.html') or die $!;
+	print $fh html_head(build_index());
+	close $fh or die;
 }
-
-# Print to stdout
 else {
+	# Print to stdout FIXME: this will unsort everything because
+	# it was put in a hash...
     print html_head( join( "", values %processed ) );
 }
