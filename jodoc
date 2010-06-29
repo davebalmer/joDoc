@@ -90,7 +90,7 @@ sub autolink {
             # make anything refing a keywork link to it
             if ($outputdir) {
                 $input =~
-s/{(\W+)($keys)(?!\<\/a|\w+)/$1\<a href=\"$h1s{$2}\#$2\"\>$2\<\/a\>/g;
+s/(\W+)($keys)(?!\<\/a|\w+)/$1\<a href=\"$h1s{$2}\#$2\"\>$2\<\/a\>/g;
 
                 # make a #tag for the keyword h1 tag
                 $input =~ s/\<h1\>\<a href=\"$h1s{$2}\#$2/\<h1\>\<a name=\"$2/g;
@@ -98,7 +98,7 @@ s/{(\W+)($keys)(?!\<\/a|\w+)/$1\<a href=\"$h1s{$2}\#$2\"\>$2\<\/a\>/g;
             else {
 
                 $input =~
-                  s/{(\W+)($keys)(?!\<\/a|\w+)/$1\<a href=\"\#$2\"\>$2\<\/a\>/g;
+                  s/(\W+)($keys)(?!\<\/a|\w+)/$1\<a href=\"\#$2\"\>$2\<\/a\>/g;
 
                 # make a #tag for the keyword h1 tag
                 $input =~ s/\<h1\>\<a href=\"\#/\<h1\>\<a name=\"/g;
@@ -108,7 +108,9 @@ s/{(\W+)($keys)(?!\<\/a|\w+)/$1\<a href=\"$h1s{$2}\#$2\"\>$2\<\/a\>/g;
             my $lastletter = "ZZ";
 
             # Make an alphasorted index
-            for my $i ( sort { lc($a) cmp lc($b) } @keywords ) {
+            for my $i ( sort { lc($a) cmp lc($b) }
+                grep { $file eq $h1s{$_} } @keywords )
+            {
                 my $letter = uc( substr( $i, 0, 1 ) );
                 if ( $letter ne $lastletter ) {
                     if ( $lastletter ne "ZZ" ) {
@@ -118,7 +120,7 @@ s/{(\W+)($keys)(?!\<\/a|\w+)/$1\<a href=\"$h1s{$2}\#$2\"\>$2\<\/a\>/g;
                     $index .= "\n<ul>\n";
                     $lastletter = $letter;
                 }
-                $index .= qq(<li><a href="#$i">$i</a></li>\n);
+                $index .= qq(<li><a href="$h1s{$i}#$i">$i</a></li>\n);
             }
             $index .= "</ul></div>\n\n";
             $processed{$file} = $input . $index;
