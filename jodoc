@@ -275,7 +275,6 @@ sub main {
 
     # Print to stdout
     else {
-        my @keywords = keys %h1s;
         print html_head( join( "", values %processed ) . indexer );
     }
 }
