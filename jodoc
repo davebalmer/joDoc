@@ -14,7 +14,8 @@ my $toc;
 my $template;
 my %h1s            = ();
 my %processed      = ();
-my %files_to_h1s = ();
+my %files_to_h1s   = ();
+my %file_to_munged = ();
 
 GetOptions(
     "markdown=s" => \$markdown_bin,
@@ -113,8 +114,8 @@ s/(\W+)($keys)(?!\<\/a|\w+)/$1\<a href=\"$h1s{$2}\#$2\"\>$2\<\/a\>/g;
 
 # Make an alphasorted index
 sub indexer {
-    my @keywords     = keys %h1s;
-    my $file         = shift;
+    my @keywords   = keys %h1s;
+    my $file       = shift;
     my $index      = qq(\n\n<hr>\n\n<h1>Index</h1>\n<div id="index">\n);
     my $lastletter = "ZZ";
 
@@ -171,6 +172,21 @@ sub h1finder {
     }
 }
 
+sub toclinker {
+    my $indent         = shift;
+    my $pathpart       = shift;
+    my @matching_files = keys %files_to_h1s;
+    @matching_files = grep { m{$pathpart} } @matching_files;
+    my @matching_h1s = ();
+    push( @matching_h1s, @{ $files_to_h1s{$_} } ) for @matching_files;
+    @matching_h1s = sort { lc($a) cmp lc($b) } @matching_h1s;
+    $_ = $indent . '* ' . $_ . "\n" for @matching_h1s;
+    return join( "", @matching_h1s );
+}
+
+sub munge {
+}
+
 sub main {
 
     # If not specified, find a markdown parser in the path
@@ -217,39 +233,43 @@ sub main {
             $processed{$file} = $content;
         }
     }
-    h1finder;
+
+#TODO: toclinker needs h1finder to run, but needs the original filenames to get the tags out.
+# Also, have to mungify links for before h1finder for autolink, but toclinker needs original files
+# fix this tomorrow
     if ($toc) {
-        my $content;
-        open (my $fh, '<', $toc) or die $!;
-        {
-            local $\;
-            $content = <$fh>;
-        }
+        my @content;
+        open( my $fh, '<', $toc ) or die $!;
+        @content = <$fh>;
+        my @toclinked;
         close $fh or die $!;
-        my $toclinker = sub {
-            my $indent = shift;
-            my $pathpart = shift;
-            my @matching_files = keys %files_to_h1s;
-            @matching_files = grep { m{$pathpart} } @matching_files;
-            my @matching_h1s = ();
-            push(@matching_h1s, @{$files_to_h1s{$_}}) for @matching_files;
-            @matching_h1s = sort { lc($a) cmp lc($b) } @matching_h1s;
-            $_ = $indent.'-'.$_."\n" for @matching_h1s;
-            return join("",@matching_h1s);
-        };
-        $content =~ s/{(\s*)-{(\w+)}/$toclinker->($1,$2)/g;
-        $processed{"_content.html"} = $content;
+        for my $line (@content) {
+            if ( $line =~ /(\s*)-{(\w+)}/ ) {
+                $line = toclinker( $1, $2 );
+            }
+            push( @toclinked, $line );
+        }
+        $processed{_content} = join( "", @toclinked );
     }
+
+    # munge output file names
+    my %munged_processed = ();
+    for my $file (@files) {
+        my @path_parts = split( /\//, $file );
+        s{\.+}{_}g for @path_parts;
+        my $path = join( '_', @path_parts );
+        my $munged = $path . '.html';
+        $munged_processed{$munged} = $processed{$file};
+    }
+    %processed = %munged_processed;
+
+    h1finder;
     autolink;
 
     # Print docs to separate files in the same hierarchy as the input
     if ($outputdir) {
         mkdir $outputdir;
         for my $file ( keys %processed ) {
-            my @path_parts = split( /\//, $file );
-            s{\.+}{_}g for @path_parts;
-            my $path = join( '_', @path_parts );
-            $file = $path . '.html';
             open( my $fh, '>', $outputdir . '/' . $file ) or die $!;
             print $fh html_head( $processed{$file} );
             close $fh or die;
