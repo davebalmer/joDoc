@@ -251,7 +251,7 @@ sub main {
         my @toclinked;
         close $fh or die $!;
         for my $line (@content) {
-            if ( $line =~ /(\s*)-{(\w+)}/ ) {
+            if ( $line =~ /(\s*).\s+{(\w+)}/ ) {
                 $line = toclinker( $1, $2 );
             }
             push( @toclinked, $line );
