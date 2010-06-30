@@ -12,3 +12,5 @@ JoDoc options:
 * --markdown, specify a markdown processor
 
 * --title, specify a title for the output HTML
+
+* --template, a template file for HTML output *(experimental)*
