@@ -1,5 +1,5 @@
 JoDoc - Javascript Documenter
----
+===
 
 Takes in files and passes them through markdown in a consistent manner
 

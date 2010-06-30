@@ -98,6 +98,7 @@ sub autolink {
         $input =~
           s{(\<a)\s+(href=\"(?:http|mailto|ftp))}{$1 class=\"external\" $2}g;
         my @keywords = keys %h1s;
+        @keywords = reverse sort {lc($a) cmp lc($b)} @keywords;
         if (@keywords) {
 
             # prepare for the regex
