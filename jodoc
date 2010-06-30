@@ -52,25 +52,40 @@ sub html_head {
     # we could use a formal templating system, but for initial release
     # let's keep it simple
     my $output = qq(
-  <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 
-  <html lang="en">
-  <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <title>$title</title>
-  <meta name="generator" content="joDoc">
-  <link rel="stylesheet" type="text/css" href="docbody.css">
-  <link rel="stylesheet" type="text/css" href="doc.css">
-  <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width">
-  <meta name="format-detection" content="false">
-  </head>
-  <body>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>$title</title>
+<meta name="generator" content="joDoc">
+<link rel="stylesheet" type="text/css" href="docbody.css">
+<link rel="stylesheet" type="text/css" href="doc.css">
+<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width">
+<meta name="format-detection" content="false">
+</head>
+<body>
 
-  $input
+$input
 
-  </body>
-  </html>);
+</body>
+</html>);
     return $output;
+}
+
+# Read file into a string
+sub read_file {
+    my $in = shift;
+    my $out;
+    open( my $fh, '<', $in ) or die $!;
+    {
+
+        # Deactivate input record separator
+        local $/;
+        $out = <$fh>;
+    }
+    close $fh or die $!;
+    return $out;
 }
 
 # link together all the html output, make an index at the bottom of each page
@@ -221,13 +236,7 @@ sub main {
         }
 
         if ( $file =~ m{\.(js|css|mdown|html|md|markdown|htm)$}i ) {
-            my $content;
-            open( my $fh, '<', $file ) or die $!;
-            {
-                local $/;
-                $content = <$fh>;
-            }
-            close $fh or die $!;
+            my $content = read_file($file);
 
             # javascript and css files get "cleaned"
             if ( $file =~ m{\.(js|css)$} ) {
@@ -245,13 +254,12 @@ sub main {
     #TODO: This is a nasty hack, but it works. Fix when times are better.
     if ($toc) {
         h1finder;
-        my @content;
         my @toclinked;
         open( my $fh, '<', $toc ) or die $!;
-        @content = <$fh>;
+        my @content = <$fh>;
         close $fh or die $!;
         for my $line (@content) {
-            if ( $line =~ /(\s*).\s*{(.+)}/ ) {
+            if ( $line =~ m/(\s*).\s*{(.+)}/ ) {
                 $line = toclinker( $1, $2 );
             }
             push( @toclinked, $line );
