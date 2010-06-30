@@ -246,12 +246,12 @@ sub main {
     if ($toc) {
         h1finder;
         my @content;
+        my @toclinked;
         open( my $fh, '<', $toc ) or die $!;
         @content = <$fh>;
-        my @toclinked;
         close $fh or die $!;
         for my $line (@content) {
-            if ( $line =~ /(\s*).\s+{(\w+)}/ ) {
+            if ( $line =~ /(\s*).\s*{(.+)}/ ) {
                 $line = toclinker( $1, $2 );
             }
             push( @toclinked, $line );
