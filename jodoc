@@ -1,33 +1,35 @@
 #!/usr/bin/env perl
 # Everything moved into one file, does things the right way
+use 5.010;
 use strict;
 use warnings;
 use Getopt::Long;
 use IPC::Open2;
-use File::Path qw(make_path);
 
 # parse the input options
 my $markdown_bin;
 my $outputdir;
 my $title;
 my $toc;
-my %h1s;
-my %processed = ();
+my $template;
+my %h1s            = ();
+my %processed      = ();
+my %files_to_h1s = ();
 
 GetOptions(
     "markdown=s" => \$markdown_bin,
     "output=s"   => \$outputdir,
     "title=s"    => \$title,
     "toc=s"      => \$toc,
-    "title=s"    => \$title
+    "title=s"    => \$title,
+    "template=s" => \$template
 ) or die;
 
-die "You need to specify a config file for a table of contents.\n"
+die
+"You need to specify a template file for a table of contents, and have specified --output.\n"
   if ( $toc && !defined($outputdir) );
 
 $title = "joDoc" unless ( defined($title) );
-
-warn "--toc doesn't do anything yet!\n" if $toc;
 
 # grab comments out of incoming text
 sub docker {
@@ -94,7 +96,6 @@ s/(\W+)($keys)(?!\<\/a|\w+)/$1\<a href=\"$h1s{$2}\#$2\"\>$2\<\/a\>/g;
 
                 # make a #tag for the keyword h1 tag
                 $input =~ s/\<h1\>\<a href=\"[^\#\>]*\#/\<h1\>\<a name=\"/g;
-                $processed{$file} = $input . indexer( \@keywords, $file );
             }
             else {
 
@@ -103,28 +104,17 @@ s/(\W+)($keys)(?!\<\/a|\w+)/$1\<a href=\"$h1s{$2}\#$2\"\>$2\<\/a\>/g;
 
                 # make a #tag for the keyword h1 tag
                 $input =~ s/\<h1\>\<a href=\"\#/\<h1\>\<a name=\"/g;
-                $processed{$file} = $input;
             }
         }
-        else {
 
-            # no index if there are no h1 tags
-            $processed{$file} = $input;
-        }
+        $processed{$file} = $input;
     }
 }
 
 # Make an alphasorted index
 sub indexer {
-    my $keywords_ref = shift;
-    my @keywords     = @{$keywords_ref};
+    my @keywords     = keys %h1s;
     my $file         = shift;
-
-    # filter by filename
-    @keywords =
-      sort { lc($a) cmp lc($b) }
-      grep { ( $file eq $h1s{$_} ) } @keywords
-      if $file;
     my $index      = qq(\n\n<hr>\n\n<h1>Index</h1>\n<div id="index">\n);
     my $lastletter = "ZZ";
 
@@ -169,16 +159,16 @@ sub markdown_pipe {
 
 # Find all the h1tags for all files
 sub h1finder {
-    my %h1s_to_file = ();
+    %files_to_h1s = ();
     for my $file ( keys %processed ) {
         my @h1      = ();
         my $content = $processed{$file};
         while ( $content =~ m{\<h1\>([^\<]+)\<\/h1\>}g ) {
             push( @h1, $1 );
         }
-        $h1s_to_file{$_} = $file for @h1;
+        $h1s{$_} = $file for @h1;
+        $files_to_h1s{$file} = \@h1;
     }
-    return %h1s_to_file;
 }
 
 sub main {
@@ -224,20 +214,42 @@ sub main {
             unless ( $file =~ m{\.html$} ) {
                 $content = markdown_pipe($content);
             }
-            my @path_parts = split( /\//, $file );
-            s{\.+}{_}g for @path_parts;
-            my $path = join( '_', @path_parts );
-            $file = $path . '.html';
             $processed{$file} = $content;
         }
     }
-    %h1s = h1finder;
+    h1finder;
+    if ($toc) {
+        my $content;
+        open (my $fh, '<', $toc) or die $!;
+        {
+            local $\;
+            $content = <$fh>;
+        }
+        close $fh or die $!;
+        my $toclinker = sub {
+            my $indent = shift;
+            my $pathpart = shift;
+            my @matching_files = keys %files_to_h1s;
+            @matching_files = grep { m{$pathpart} } @matching_files;
+            my @matching_h1s = ();
+            push(@matching_h1s, @{$files_to_h1s{$_}}) for @matching_files;
+            @matching_h1s = sort { lc($a) cmp lc($b) } @matching_h1s;
+            $_ = $indent.'-'.$_."\n" for @matching_h1s;
+            return join("",@matching_h1s);
+        };
+        $content =~ s/{(\s*)-{(\w+)}/$toclinker->($1,$2)/g;
+        $processed{"_content.html"} = $content;
+    }
     autolink;
 
     # Print docs to separate files in the same hierarchy as the input
     if ($outputdir) {
         mkdir $outputdir;
         for my $file ( keys %processed ) {
+            my @path_parts = split( /\//, $file );
+            s{\.+}{_}g for @path_parts;
+            my $path = join( '_', @path_parts );
+            $file = $path . '.html';
             open( my $fh, '>', $outputdir . '/' . $file ) or die $!;
             print $fh html_head( $processed{$file} );
             close $fh or die;
