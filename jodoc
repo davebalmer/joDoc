@@ -116,7 +116,7 @@ sub indexer {
     my $index      = qq(\n\n<hr>\n\n<h1>Index</h1>\n<div id="index">\n);
     my $lastletter = "ZZ";
 
-    for my $i (sort { lc($a) cmp lc($b) } @keywords) {
+    for my $i ( sort { lc($a) cmp lc($b) } @keywords ) {
         my $letter = uc( substr( $i, 0, 1 ) );
         if ( $letter ne $lastletter ) {
             if ( $lastletter ne "ZZ" ) {
