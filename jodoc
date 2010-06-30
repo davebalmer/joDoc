@@ -157,6 +157,7 @@ sub markdown_pipe {
 
 # Find all the h1tags for all files
 sub h1finder {
+    %h1s          = ();
     %files_to_h1s = ();
     for my $file ( keys %processed ) {
         my @h1      = ();
@@ -183,10 +184,6 @@ sub toclinker {
 
 # munge output file names
 sub munge {
-
-    # reset h1s and files_to_h1s if set, this will break them
-    %h1s          = ();
-    %files_to_h1s = ();
     my %munged_processed = ();
     for my $file ( keys %processed ) {
         my @path_parts = split( /\//, $file );
