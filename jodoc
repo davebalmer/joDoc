@@ -35,7 +35,7 @@ sub docker {
     my $input  = shift;
     my @output = ();
     my $line;
-    while ( $input =~ m{\*\*(?:.|[\r\n])*?\*/}g ) {
+    while ( $input =~ m{\/\*\*(?:.|[\r\n])*?\*/}g ) {
         $line = $&;
         $line =~ s{(\*\/|\/\*\*)}{}g;
         $line =~ s{([\r\n]+)\s{1}}{$1}g;
