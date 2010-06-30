@@ -1,6 +1,5 @@
 #!/usr/bin/env perl
 # Everything moved into one file, does things the right way
-use 5.010;
 use strict;
 use warnings;
 use Getopt::Long;
@@ -12,10 +11,9 @@ my $outputdir;
 my $title;
 my $toc;
 my $template;
-my %h1s            = ();
-my %processed      = ();
-my %files_to_h1s   = ();
-my %file_to_munged = ();
+my %h1s          = ();
+my %processed    = ();
+my %files_to_h1s = ();
 
 GetOptions(
     "markdown=s" => \$markdown_bin,
@@ -115,7 +113,6 @@ s/(\W+)($keys)(?!\<\/a|\w+)/$1\<a href=\"$h1s{$2}\#$2\"\>$2\<\/a\>/g;
 # Make an alphasorted index
 sub indexer {
     my @keywords   = keys %h1s;
-    my $file       = shift;
     my $index      = qq(\n\n<hr>\n\n<h1>Index</h1>\n<div id="index">\n);
     my $lastletter = "ZZ";
 
@@ -184,7 +181,21 @@ sub toclinker {
     return join( "", @matching_h1s );
 }
 
+# munge output file names
 sub munge {
+
+    # reset h1s and files_to_h1s if set, this will break them
+    %h1s          = ();
+    %files_to_h1s = ();
+    my %munged_processed = ();
+    for my $file ( keys %processed ) {
+        my @path_parts = split( /\//, $file );
+        s{\.+}{_}g for @path_parts;
+        my $path = join( '_', @path_parts );
+        my $munged = $path . '.html';
+        $munged_processed{$munged} = $processed{$file};
+    }
+    %processed = %munged_processed;
 }
 
 sub main {
@@ -234,10 +245,9 @@ sub main {
         }
     }
 
-#TODO: toclinker needs h1finder to run, but needs the original filenames to get the tags out.
-# Also, have to mungify links for before h1finder for autolink, but toclinker needs original files
-# fix this tomorrow
+    #TODO: This is a nasty hack, but it works. Fix when times are better.
     if ($toc) {
+        h1finder;
         my @content;
         open( my $fh, '<', $toc ) or die $!;
         @content = <$fh>;
@@ -249,25 +259,15 @@ sub main {
             }
             push( @toclinked, $line );
         }
-        $processed{_content} = join( "", @toclinked );
+        $processed{_content} = markdown_pipe( join( "", @toclinked ) );
     }
-
-    # munge output file names
-    my %munged_processed = ();
-    for my $file (@files) {
-        my @path_parts = split( /\//, $file );
-        s{\.+}{_}g for @path_parts;
-        my $path = join( '_', @path_parts );
-        my $munged = $path . '.html';
-        $munged_processed{$munged} = $processed{$file};
-    }
-    %processed = %munged_processed;
-
+    munge;
     h1finder;
     autolink;
 
     # Print docs to separate files in the same hierarchy as the input
     if ($outputdir) {
+        $processed{"_index.html"} = indexer;
         mkdir $outputdir;
         for my $file ( keys %processed ) {
             open( my $fh, '>', $outputdir . '/' . $file ) or die $!;
@@ -279,8 +279,7 @@ sub main {
     # Print to stdout
     else {
         my @keywords = keys %h1s;
-        print html_head(
-            join( "", values %processed ) . indexer( \@keywords ) );
+        print html_head( join( "", values %processed ) . indexer );
     }
 }
 
