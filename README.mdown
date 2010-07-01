@@ -77,10 +77,37 @@ Use
 
 - `--toc file`
 
-  joDoc will work with a table of contents config file, which is
-  basically a list of file(s) in the order you want them parsed. Wildcards are
-  supported, and indentation denotes content structure (more to come, this is
-  still being designed).
+  joDoc will work with a table of contents structure defined in a markdown
+  file. Your TOC file can be completely manual, just a list of atuo-linked
+  terms (or markdown or even HTML style links), but joDoc will do do more
+  if you want it. For example:
+
+		Developer Guide
+		---------------
+
+		- {ABOUT.mdown}
+		- {README.mdown}
+		- {docs/}
+		- {LICENSE.mdown}
+
+		API Reference
+		-------------
+
+		### Core
+		- {js/core}
+
+		### Data
+		- {js/data}
+
+		### User Interface
+		- {js/ui}
+
+  You can put a file path inside the {} pairs, and joDoc will attempt to find
+  and sort all the headers from the files which match that pattern.
+
+> NOTE: the TOC is not a replacement for the `filespec` in the command line.
+> You need to make sure to tell joDoc what directorie(s) to parse. The TOC is
+> a semi-automated document which can be useful but is not required.
 
 - `--markdown file`
 
