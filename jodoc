@@ -11,10 +11,10 @@ my $outputdir;
 my $title;
 my $toc;
 my $template;
-my $template_html = do { local $/; <DATA> }; 
-my %h1s          = ();
-my %processed    = ();
-my %files_to_h1s = ();
+my $template_html = do { local $/; <DATA> };
+my %h1s           = ();
+my %processed     = ();
+my %files_to_h1s  = ();
 
 GetOptions(
     "markdown=s" => \$markdown_bin,
@@ -24,14 +24,13 @@ GetOptions(
     "template=s" => \$template
 ) or die;
 
-die
-"You need to specify --output if you use --toc.\n"
+die "You need to specify --output if you use --toc.\n"
   if ( $toc && !defined($outputdir) );
 
 $title = "joDoc" unless ( defined($title) );
 
 if ($template) {
-	$template_html = read_file($template);
+    $template_html = read_file($template);
 }
 
 # grab comments out of incoming text
@@ -53,10 +52,10 @@ sub docker {
 sub html_head {
     my $body = shift;
 
-	my $output = $template_html;
+    my $output = $template_html;
 
-	$output =~ s/\$title/$title/g;
-	$output =~ s/\$body/$body/g;
+    $output =~ s/\$title/$title/g;
+    $output =~ s/\$body/$body/g;
 
     return $output;
 }
@@ -67,6 +66,7 @@ sub read_file {
     my $out;
     open( my $fh, '<', $in ) or die $!;
     {
+
         # Deactivate input record separator
         local $/;
         $out = <$fh>;
@@ -85,7 +85,7 @@ sub autolink {
         $input =~
           s{(\<a)\s+(href=\"(?:http|mailto|ftp))}{$1 class=\"external\" $2}g;
         my @keywords = keys %h1s;
-        @keywords = reverse sort {lc($a) cmp lc($b)} @keywords;
+        @keywords = reverse sort { lc($a) cmp lc($b) } @keywords;
         if (@keywords) {
 
             # prepare for the regex
