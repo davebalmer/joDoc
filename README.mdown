@@ -69,7 +69,7 @@ Requirements
 Use
 ---
 
-	jodoc [--output path] [--title string] [--toc file] [--markdown file] [filespec]
+	jodoc [--output path] [--title string] [--toc file] [--template file] [--markdown file] [filespec]
 
 - `--output path`
 
