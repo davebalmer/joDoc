@@ -210,10 +210,12 @@ sub munge {
 sub index_to_json {
     my @keywords = keys %h1s;
     @keywords = sort { lc($a) cmp lc($b) } @keywords;
-    return '["' . join( '","', @keywords ) . '"]';
+    $_ = qq({"term":"$_","url":"$h1s{$_}"}) for @keywords;
+    return '[' . join( ',', @keywords ) . ']';
 }
 
 sub content_to_json {
+
     #TODO: fill this in
     return "";
 }
