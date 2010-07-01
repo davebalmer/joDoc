@@ -138,8 +138,8 @@ Simple case:
 
 By default, joDoc will start in the current directory and recursively look for
 `*.mdown`, `.*.js` and `*.css` files to build documentation. Unless directed
-otherwise, joDoc will create a `./jodoc` directory with all the documentation
-output.
+otherwise, joDoc will print a unified HTML file on standard out with all the
+documentation output.
 
 Specifying an output base directory:
 
@@ -151,5 +151,5 @@ Specifying files to parse:
 
 Defining a table of contents structure:
 
-	jodoc --content ~/release.toc
+	jodoc --toc ~/release.toc
 

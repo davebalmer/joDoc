@@ -75,6 +75,15 @@ sub read_file {
     return $out;
 }
 
+# Write a file out
+sub write_file {
+    my $file      = shift;
+    my $outstring = shift;
+    open( my $fh, '>', $file ) or die $!;
+    print $fh $outstring;
+    close $fh or die $!;
+}
+
 # link together all the html output, make an index at the bottom of each page
 # will link between all files in the output
 sub autolink {
@@ -198,6 +207,17 @@ sub munge {
     %processed = %munged_processed;
 }
 
+sub index_to_json {
+    my @keywords = keys %h1s;
+    @keywords = sort { lc($a) cmp lc($b) } @keywords;
+    return '["' . join( '","', @keywords ) . '"]';
+}
+
+sub content_to_json {
+    #TODO: fill this in
+    return "";
+}
+
 sub main {
 
     # If not specified, find a markdown parser in the path
@@ -263,10 +283,12 @@ sub main {
         $processed{"_index.html"} = indexer;
         mkdir $outputdir;
         for my $file ( keys %processed ) {
-            open( my $fh, '>', $outputdir . '/' . $file ) or die $!;
-            print $fh html_head( $processed{$file} );
-            close $fh or die;
+            write_file( $outputdir . '/' . $file,
+                html_head( $processed{$file} ) );
         }
+        write_file( $outputdir . '/_index.json', index_to_json );
+        ## TODO: Make this a reality
+        # write_file ($outputdir. '/_content.json', content_to_json);
     }
 
     # Print to stdout
