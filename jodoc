@@ -11,6 +11,7 @@ my $outputdir;
 my $title;
 my $toc;
 my $template;
+my $template_html = do { local $/; <DATA> }; 
 my %h1s          = ();
 my %processed    = ();
 my %files_to_h1s = ();
@@ -24,10 +25,14 @@ GetOptions(
 ) or die;
 
 die
-"You need to specify a template file for a table of contents, and have specified --output.\n"
+"You need to specify --output if you use --toc.\n"
   if ( $toc && !defined($outputdir) );
 
 $title = "joDoc" unless ( defined($title) );
+
+if ($template) {
+	$template_html = read_file($template);
+}
 
 # grab comments out of incoming text
 sub docker {
@@ -44,31 +49,15 @@ sub docker {
 }
 
 # put a nice header on the html output
+# templates can use $body, $title
 sub html_head {
-    my $input = shift;
+    my $body = shift;
 
-    # TODO: needs to support header/footer HTML templates at a minimum.
-    # we could use a formal templating system, but for initial release
-    # let's keep it simple
-    my $output = qq(
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+	my $output = $template_html;
 
-<html lang="en">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>$title</title>
-<meta name="generator" content="joDoc">
-<link rel="stylesheet" type="text/css" href="docbody.css">
-<link rel="stylesheet" type="text/css" href="doc.css">
-<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width">
-<meta name="format-detection" content="false">
-</head>
-<body>
+	$output =~ s/\$title/$title/g;
+	$output =~ s/\$body/$body/g;
 
-$input
-
-</body>
-</html>);
     return $output;
 }
 
@@ -78,7 +67,6 @@ sub read_file {
     my $out;
     open( my $fh, '<', $in ) or die $!;
     {
-
         # Deactivate input record separator
         local $/;
         $out = <$fh>;
@@ -288,3 +276,21 @@ sub main {
 }
 
 main;
+
+# default html template, mobile compatible
+__DATA__
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>$title</title>
+<meta name="generator" content="joDoc">
+<link rel="stylesheet" type="text/css" href="docbody.css">
+<link rel="stylesheet" type="text/css" href="doc.css">
+<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width">
+<meta name="format-detection" content="false">
+</head>
+<body>
+$body
+</body>
+</html>
