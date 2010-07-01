@@ -90,6 +90,13 @@ Use
 
   is an optional title which will appear on your HTML output.
 
+- `--template file`
+
+  tells joDoc to use a custom HTML file as a template, a simple example:
+
+	<html><head><title>$title</title></head>
+	<body>$body</body></html>
+
 - `filespec`
 
   is one or more files to parse, wildcards are supported.
