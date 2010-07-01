@@ -80,6 +80,9 @@ sub read_file {
 sub autolink {
     my @keywords = keys %h1s;
     @keywords = reverse sort { lc($a) cmp lc($b) } @keywords;
+
+    # prepare for the regex
+    my $keys = join( "|", @keywords );
     for my $file ( keys %processed ) {
         my $input = $processed{$file};
 
@@ -87,9 +90,6 @@ sub autolink {
         $input =~
           s{(\<a)\s+(href=\"(?:http|mailto|ftp))}{$1 class=\"external\" $2}g;
         if (@keywords) {
-
-            # prepare for the regex
-            my $keys = join( "|", @keywords );
 
             # make anything refing a keywork link to it
             if ($outputdir) {
