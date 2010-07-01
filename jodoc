@@ -20,7 +20,6 @@ GetOptions(
     "output=s"   => \$outputdir,
     "title=s"    => \$title,
     "toc=s"      => \$toc,
-    "title=s"    => \$title,
     "template=s" => \$template
 ) or die;
 
