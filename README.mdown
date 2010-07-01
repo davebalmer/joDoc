@@ -60,7 +60,7 @@ Can't get much more flexible than that.
 Requirements
 ------------
 
-1. perl 5.10.0
+1. perl 5.8 or greater
 2. [Markdown.pl](http://daringfireball.net/projects/markdown/) (or compatible parser)
 
 > Windows users should get some suggestions for installing ActiveState or cygwin
