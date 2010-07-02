@@ -288,8 +288,17 @@ sub main {
         $processed{"_index.html"} = indexer;
         mkdir $outputdir;
         for my $file ( keys %processed ) {
-            write_file( $outputdir . '/' . $file,
-                html_head( $processed{$file} ) );
+
+# if the processed output doesn't have at least ONE WORD CHARACTER, then it's blank.
+            if ( $processed{$file} =~ m{\w} ) {
+                write_file(
+                    $outputdir . '/' . $file,
+                    html_head( $processed{$file} )
+                );
+            }
+            else {
+                warn "File $file is blank, not creating file\n";
+            }
         }
         write_file( $outputdir . '/_index.json', index_to_json );
         ## TODO: Make this a reality
