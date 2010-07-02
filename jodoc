@@ -233,6 +233,9 @@ sub main {
     my @files = @ARGV;
     @files = glob("./*") unless ( $ARGV[0] );
     for my $file (@files) {
+
+        # collapse multiple \/'s for toclinker's sake
+        $file =~ s{\/+}{\/}g;
         unless ( -e $file ) {
             warn "$file not found!\n";
             next;
