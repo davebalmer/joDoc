@@ -11,17 +11,21 @@ my $outputdir;
 my $title;
 my $toc;
 my $template;
+my $smartypants_bin;
+my $use_smartypants;
 my $template_html = do { local $/; <DATA> };
 my %h1s           = ();
 my %processed     = ();
 my %files_to_h1s  = ();
 
 my $result = GetOptions(
-    "markdown|m=s" => \$markdown_bin,
-    "output|o=s"   => \$outputdir,
-    "title|t=s"    => \$title,
-    "toc=s"        => \$toc,
-    "template=s"   => \$template
+    "markdown|m=s"  => \$markdown_bin,
+    "output|o=s"    => \$outputdir,
+    "title|t=s"     => \$title,
+    "toc=s"         => \$toc,
+    "template=s"    => \$template,
+    "s"             => \$use_smartypants,
+    "smartypants=s" => \$smartypants_bin
 );
 
 # Exit nicer than an empty die
@@ -167,6 +171,27 @@ sub markdown_pipe {
         push( @out, $_ );
     }
     close $chld_out or die $!;
+
+    # We don't leave a process behind!
+    waitpid( $pid, 0 );
+    return join( "", @out );
+}
+
+sub smartypants_pipe {
+    my $in  = shift;
+    my @out = ();
+    return $in unless $use_smartypants;
+    my $pid = open2( my $chld_out, my $chld_in, "$smartypants_bin -" )
+      or die $!;
+    print $chld_in $in;
+    close $chld_in or die $!;
+    while (<$chld_out>) {
+        push( @out, $_ );
+    }
+    close $chld_out or die $!;
+
+    # We don't leave a process behind!
+    waitpid( $pid, 0 );
     return join( "", @out );
 }
 
@@ -220,10 +245,15 @@ sub index_to_json {
 sub main {
 
     # If not specified, find a markdown parser in the path
-    chomp( $markdown_bin = qx(which markdown) ) unless $markdown_bin;
+    chomp( $markdown_bin    = qx(which markdown) )    unless $markdown_bin;
+    chomp( $smartypants_bin = qx(which smartypants) ) unless $smartypants_bin;
 
     # We can't do anything if we can't call markdown
     die "Markdown parser not found!\n" unless ( -x $markdown_bin );
+    if ($use_smartypants) {
+        die "Smartypants prettifier not found!\n"
+          unless ( -x $smartypants_bin );
+    }
 
     # Slurp all the files and process them
     # recurse current directory if no input arguments
@@ -288,10 +318,8 @@ sub main {
 
 # if the processed output doesn't have at least ONE WORD CHARACTER, then it's blank.
             if ( $processed{$file} =~ m{\w} ) {
-                write_file(
-                    $outputdir . '/' . $file,
-                    html_head( $processed{$file} )
-                );
+                write_file( $outputdir . '/' . $file,
+                    smartypants_pipe( html_head( $processed{$file} ) ) );
             }
             else {
                 warn "File $file contained no content, not creating file\n";
@@ -302,7 +330,8 @@ sub main {
 
     # Print to stdout
     else {
-        print html_head( join( "", values %processed ) . indexer );
+        print smartypants_pipe(
+            html_head( join( "", values %processed ) . indexer ) );
     }
 }
 
