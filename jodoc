@@ -217,12 +217,6 @@ sub index_to_json {
     return '[' . join( ',', @keywords ) . ']';
 }
 
-sub content_to_json {
-
-    #TODO: fill this in
-    return "";
-}
-
 sub main {
 
     # If not specified, find a markdown parser in the path
