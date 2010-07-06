@@ -16,13 +16,16 @@ my %h1s           = ();
 my %processed     = ();
 my %files_to_h1s  = ();
 
-GetOptions(
+my $result = GetOptions(
     "markdown|m=s" => \$markdown_bin,
     "output|o=s"   => \$outputdir,
     "title|t=s"    => \$title,
     "toc=s"        => \$toc,
     "template=s"   => \$template
-) or die;
+);
+
+# Exit nicer than an empty die
+exit(-1) unless ($result);
 
 die "You need to specify --output or -o if you use --toc.\n"
   if ( $toc && !defined($outputdir) );
