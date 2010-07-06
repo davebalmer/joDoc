@@ -125,11 +125,11 @@ Use
 		<html><head><title>$title</title></head>
 		<body>$body</body></html>
 
-- `smartypants`
+- `--smartypants`
 
   tells joDoc to use a specific smartypants prettifier.
 
-- `s`
+- `-s`
 
   tells joDoc to filter output through SmartyPants.
 
