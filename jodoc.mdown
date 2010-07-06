@@ -14,3 +14,7 @@ JoDoc options:
 * --toc, print out a table of contents into a specified file in --output
 
 * --template, a template file for HTML output
+
+* -s, use SmartyPants HTML prettifier
+
+* --smartypants, specify a smartypants prettifier

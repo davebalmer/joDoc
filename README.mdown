@@ -60,8 +60,9 @@ Can't get much more flexible than that.
 Requirements
 ------------
 
-1. perl 5.8 or greater *(YMMV with older perl versions)*
+1. perl 5.8 or greater (*YMMV with older perl versions*)
 2. [Markdown.pl](http://daringfireball.net/projects/markdown/) (or compatible parser)
+3. [SmartyPants.pl](http://daringfireball.net/projects/smartypants/) (*optional*)
 
 > Windows users should get some suggestions for installing ActiveState or cygwin
 
@@ -69,7 +70,7 @@ Requirements
 Use
 ---
 
-	jodoc [--output path] [--title string] [--toc file] [--template file] [--markdown file] [filespec]
+	jodoc [--output path] [--title string] [--toc file] [--template file] [--markdown file] [-s] [--smartypants file] [filespec]
 
 - `--output path`
 
@@ -123,6 +124,14 @@ Use
 
 		<html><head><title>$title</title></head>
 		<body>$body</body></html>
+
+- `smartypants`
+
+  tells joDoc to use a specific smartypants prettifier.
+
+- `s`
+
+  tells joDoc to filter output through SmartyPants.
 
 - `filespec`
 
