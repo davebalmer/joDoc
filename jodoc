@@ -17,14 +17,14 @@ my %processed     = ();
 my %files_to_h1s  = ();
 
 GetOptions(
-    "markdown=s" => \$markdown_bin,
-    "output=s"   => \$outputdir,
-    "title=s"    => \$title,
-    "toc=s"      => \$toc,
-    "template=s" => \$template
+    "markdown|m=s" => \$markdown_bin,
+    "output|o=s"   => \$outputdir,
+    "title|t=s"    => \$title,
+    "toc=s"        => \$toc,
+    "template=s"   => \$template
 ) or die;
 
-die "You need to specify --output if you use --toc.\n"
+die "You need to specify --output or -o if you use --toc.\n"
   if ( $toc && !defined($outputdir) );
 
 $title = "joDoc" unless ( defined($title) );
@@ -297,12 +297,10 @@ sub main {
                 );
             }
             else {
-                warn "File $file is blank, not creating file\n";
+                warn "File $file contained no content, not creating file\n";
             }
         }
         write_file( $outputdir . '/_index.json', index_to_json );
-        ## TODO: Make this a reality
-        # write_file ($outputdir. '/_content.json', content_to_json);
     }
 
     # Print to stdout
