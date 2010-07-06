@@ -4,8 +4,8 @@
 
 <!-- markdown-based, put anything you want -->
 <!-- replace {path} to match your project -->
-<!-- works with joDoc autolink, so can manually ->
-<!-- put keywords from docs directly here, like
+<!-- works with joDoc autolink, so can manually -->
+<!-- put keywords from docs directly here, like -->
 <!-- "License" below  -->
 Developer Guide
 ---------------
