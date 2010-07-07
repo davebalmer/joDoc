@@ -227,7 +227,10 @@ sub munge {
     my %munged_processed = ();
     for my $file ( keys %processed ) {
         my @path_parts = split( /\//, $file );
-        s{\.+}{_}g for @path_parts;
+        s{^\.+}{}g for @path_parts;
+
+        # Remove empty path parts, looks prettier that way
+        @path_parts = grep { $_ ne "" } @path_parts;
         my $path = join( '_', @path_parts );
         my $munged = $path . '.html';
         $munged_processed{$munged} = $processed{$file};
@@ -250,19 +253,14 @@ sub main {
 
     # We can't do anything if we can't call markdown
     die "Markdown parser not found!\n" unless ( -x $markdown_bin );
-    if ($use_smartypants) {
-        die "Smartypants prettifier not found!\n"
-          unless ( -x $smartypants_bin );
-    }
+    die "Smartypants prettifier not found!\n"
+      if ( $use_smartypants && !( -x $smartypants_bin ) );
 
     # Slurp all the files and process them
     # recurse current directory if no input arguments
     my @files = @ARGV;
     @files = glob("./*") unless ( $ARGV[0] );
     for my $file (@files) {
-
-        # collapse multiple \/'s for toclinker's sake
-        $file =~ s{\/+}{\/}g;
         unless ( -e $file ) {
             warn "$file not found!\n";
             next;
