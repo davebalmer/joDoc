@@ -61,8 +61,8 @@ sub html_head {
 
     my $output = $template_html;
 
-    $output =~ s/\$title/$title/g;
-    $output =~ s/\$body/$body/g;
+    $output =~ s{\$title}{$title}g;
+    $output =~ s{\$body}{$body}g;
 
     return $output;
 }
@@ -109,19 +109,26 @@ sub autolink {
 
             # make anything refing a keywork link to it
             if ($outputdir) {
-                $input =~
-s/(\W+)($keys)(?!\<\/a|\w+)/$1\<a href=\"$h1s{$2}\#$2\"\>$2\<\/a\>/g;
+                $input =~ s/
+                (\W+)         # The word should be delimited by something
+                ($keys)       # Search for any of the keywords
+                (?!\<\/a|\w+) # Except if if it's in a tag or the prefix to another word
+                /$1\<a href=\"$h1s{$2}\#$2\"\>$2\<\/a\>/gx
+                  ;    # Link it to the proper page and h1 tag
 
                 # make a #tag for the keyword h1 tag
-                $input =~ s/\<h1\>\<a href=\"[^\#\>]*\#/\<h1\>\<a name=\"/g;
+                $input =~ s{\<h1\>\<a href=\"[^\#\>]*\#}{\<h1\>\<a name=\"}g;
             }
             else {
-
-                $input =~
-                  s/(\W+)($keys)(?!\<\/a|\w+)/$1\<a href=\"\#$2\"\>$2\<\/a\>/g;
+                $input =~ s/
+                (\W+)         #The word should be delimited by something
+                ($keys)       #Search for any of the keywords
+                (?!\<\/a|\w+) #Except if if it's in a tag or the prefix to another word
+                /$1\<a href=\"\#$2\"\>$2\<\/a\>/gx
+                  ;    # Link it to the proper h1 tag
 
                 # make a #tag for the keyword h1 tag
-                $input =~ s/\<h1\>\<a href=\"\#/\<h1\>\<a name=\"/g;
+                $input =~ s{\<h1\>\<a href=\"\#}{\<h1\>\<a name=\"}g;
             }
         }
 
@@ -226,7 +233,7 @@ sub toclinker {
 sub munge {
     my %munged_processed = ();
     for my $file ( keys %processed ) {
-        my @path_parts = split( /\//, $file );
+        my @path_parts = split( m{/}, $file );
         s{^\.+}{}g for @path_parts;
 
         # Remove empty path parts, looks prettier that way
