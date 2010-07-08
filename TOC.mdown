@@ -2,12 +2,46 @@ Table of Contents
 =================
 
 joDoc can create an optional Table of Contents file from a markdown file.
-To use the Table of Contents option, you must specifiy an output directory.
+To use the Table of Contents option, you must specify an output directory.
 > See README for more information about the output directory.
 
 Syntax
 ------
 
 The Table of Contents file is expected to be in markdown format, but with the addition of an autogeneration marker, `{}`.
-All files that reside in the filesystem path inside the `{}` and have been parsed by joDOc will have their `<h1>` tags inlined as an unordered list.
 
+Example
+-------
+
+Using the following table of contents file:
+
+	Core
+	----
+	- Blah
+	- {js}
+
+With files `foo/js/blah.js, foo/js/bar.js` will result in a postprocess file
+
+	...
+	<h2>Core<h2>
+	<ul>
+	<li><a href="foo_js_blah.js.html#Blah>Blah</a></li>
+	<li><a href="foo_js_bar.js.html#Bar>Bar</a></li>
+	<li><a href="foo_js_blah.js.html#Blah>Blah</a></li>
+	</ul>
+	...
+> Assuming the files blah.js and bar.js have <h1> tags of the names Blah and Bar respectively.
+> Ordering of the output <h1> tags is (currently) arbitrary.
+
+
+Autogeneration
+--------------
+
+All files that reside in the filesystem path inside the `{}` and have been parsed by joDoc will have their `<h1>` tags inlined as an unordered list.
+The Table of Contents is also run through joDoc's autolinker, so you can address any `<h1>` tag by name as well.
+
+Munging
+-------
+
+joDoc uses path name munging to root output HTML documents in a directory without accidentally overwriting files.
+Because of this, it may be hard to embed direct links into the Table of Contents file. Everything works much better if you just leave it to the autolinker.
