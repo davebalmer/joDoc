@@ -30,8 +30,8 @@ With files `foo/js/blah.js, foo/js/bar.js` will result in a postprocess file
 	<li><a href="foo_js_blah.js.html#Blah>Blah</a></li>
 	</ul>
 	...
-> Assuming the files blah.js and bar.js have <h1> tags of the names Blah and Bar respectively.
-> Ordering of the output <h1> tags is (currently) arbitrary.
+> Assuming the files blah.js and bar.js have `<h1>` tags of the names Blah and Bar respectively.
+> Ordering of the output `<h1>` tags is (currently) arbitrary.
 
 
 Autogeneration
