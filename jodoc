@@ -95,6 +95,8 @@ sub write_file {
 # will link between all files in the output
 sub autolink {
     my @keywords = keys %h1s;
+
+    # Make the most specific keywords appear first, very important
     @keywords = reverse sort { lc($a) cmp lc($b) } @keywords;
 
     # let whitespace match correctly in an h1 tag
