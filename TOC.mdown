@@ -1,0 +1,13 @@
+Table of Contents
+=================
+
+joDoc can create an optional Table of Contents file from a markdown file.
+To use the Table of Contents option, you must specifiy an output directory.
+> See README for more information about the output directory.
+
+Syntax
+------
+
+The Table of Contents file is expected to be in markdown format, but with the addition of an autogeneration marker, `{}`.
+All files that reside in the filesystem path inside the `{}` and have been parsed by joDOc will have their `<h1>` tags inlined as an unordered list.
+
