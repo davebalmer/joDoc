@@ -43,9 +43,9 @@ if ($template) {
 # grab comments out of incoming text
 sub docker {
     my $input = shift;
-    my @output = $input =~ m{\/\*\*(?:.|[\r\n])*?\*/}g;
-    s{(\*\/|\/\*\*)}{}g    for @output;
-    s{([\r\n]+)\s{1}}{$1}g for @output;
+    my @output = $input =~ m{/\*\*(?:.|[\r\n])*?\*/}g;
+    s{(\*/|/\*\*)}{}g   for @output;
+    s{([\r\n]+)\s}{$1}g for @output;
     return join( "\n", @output );
 }
 
@@ -122,9 +122,9 @@ sub autolink {
             }
             else {
                 $input =~ s/
-                (\W+)         #The word should be delimited by something
-                ($keys)       #Search for any of the keywords
-                (?!\<\/a|\w+) #Except if if it's in a tag or the prefix to another word
+                (\W+)         # The word should be delimited by something
+                ($keys)       # Search for any of the keywords
+                (?!\<\/a|\w+) # Except if if it's in a tag or the prefix to another word
                 /$1\<a href=\"\#$2\"\>$2\<\/a\>/gx
                   ;    # Link it to the proper h1 tag
 
