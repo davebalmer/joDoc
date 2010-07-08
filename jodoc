@@ -97,8 +97,8 @@ sub autolink {
     my @keywords = keys %h1s;
     @keywords = reverse sort { lc($a) cmp lc($b) } @keywords;
 
-    # let spaces match correctly in an h1 tag
-    s{ }{\\s}g for @keywords;
+    # let whitespace match correctly in an h1 tag
+    s{\s}{\\s}g for @keywords;
 
     # prepare for the regex
     my $keys = join( "|", @keywords );
