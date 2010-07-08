@@ -84,6 +84,7 @@ sub write_file {
     open( my $fh, '>', $file ) or die $!;
     print $fh $outstring;
     close $fh or die $!;
+    return;
 }
 
 # link together all the html output, make an index at the bottom of each page
@@ -134,6 +135,7 @@ sub autolink {
 
         $processed{$file} = $input;
     }
+    return;
 }
 
 # Make an alphasorted index
@@ -188,7 +190,7 @@ sub smartypants_pipe {
     my $in  = shift;
     my @out = ();
     return $in unless $use_smartypants;
-    my $pid = open2( my $chld_out, my $chld_in, "$smartypants_bin -" )
+    my $pid = open2( my $chld_out, my $chld_in, "$smartypants_bin" )
       or die $!;
     print $chld_in $in;
     close $chld_in or die $!;
@@ -215,8 +217,10 @@ sub h1finder {
         $h1s{$_} = $file for @h1;
         $files_to_h1s{$file} = \@h1;
     }
+    return;
 }
 
+# Expand {} blocks in table of contents
 sub toclinker {
     my $indent         = shift;
     my $pathpart       = shift;
@@ -243,8 +247,10 @@ sub munge {
         $munged_processed{$munged} = $processed{$file};
     }
     %processed = %munged_processed;
+    return;
 }
 
+# Create a JSON output of the index
 sub index_to_json {
     my @keywords = keys %h1s;
     @keywords = sort { lc($a) cmp lc($b) } @keywords;
@@ -309,7 +315,8 @@ sub main {
             }
             push( @toclinked, $line );
         }
-        $processed{_content} = markdown_pipe( join( "", @toclinked ) );
+        $processed{_content} =
+          smartypants_pipe( markdown_pipe( join( "", @toclinked ) ) );
     }
     munge;
     h1finder;
@@ -338,6 +345,7 @@ sub main {
         print smartypants_pipe(
             html_head( join( "", values %processed ) . indexer ) );
     }
+    return;
 }
 
 main;
