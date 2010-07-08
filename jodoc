@@ -42,16 +42,11 @@ if ($template) {
 
 # grab comments out of incoming text
 sub docker {
-    my $input  = shift;
-    my @output = ();
-    my $line;
-    while ( $input =~ m{\/\*\*(?:.|[\r\n])*?\*/}g ) {
-        $line = $&;
-        $line =~ s{(\*\/|\/\*\*)}{}g;
-        $line =~ s{([\r\n]+)\s{1}}{$1}g;
-        push( @output, "\r$line\r" );
-    }
-    return join( "", @output );
+    my $input = shift;
+    my @output = $input =~ m{\/\*\*(?:.|[\r\n])*?\*/}g;
+    s{(\*\/|\/\*\*)}{}g    for @output;
+    s{([\r\n]+)\s{1}}{$1}g for @output;
+    return join( "\n", @output );
 }
 
 # put a nice header on the html output
