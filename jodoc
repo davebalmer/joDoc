@@ -118,7 +118,7 @@ sub autolink {
                   ;    # Link it to the proper page and h1 tag
 
                 # make a #tag for the keyword h1 tag
-                $input =~ s{\<h1\>\<a href=\"[^\#\>]*\#}{\<h1\>\<a name=\"}g;
+                $input =~ s{\<h1\>\<a href="[^\#\>]*#}{\<h1\>\<a name="}g;
             }
             else {
                 $input =~ s/
@@ -129,7 +129,7 @@ sub autolink {
                   ;    # Link it to the proper h1 tag
 
                 # make a #tag for the keyword h1 tag
-                $input =~ s{\<h1\>\<a href=\"\#}{\<h1\>\<a name=\"}g;
+                $input =~ s{\<h1\>\<a href="#}{\<h1\>\<a name="}g;
             }
         }
 
@@ -209,11 +209,7 @@ sub h1finder {
     %h1s          = ();
     %files_to_h1s = ();
     for my $file ( keys %processed ) {
-        my @h1      = ();
-        my $content = $processed{$file};
-        while ( $content =~ m{\<h1\>([^\<]+)\<\/h1\>}g ) {
-            push( @h1, $1 );
-        }
+        my @h1 = $processed{$file} =~ m{\<h1\>([^\<]+)\</h1\>}g;
         $h1s{$_} = $file for @h1;
         $files_to_h1s{$file} = \@h1;
     }
