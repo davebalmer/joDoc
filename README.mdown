@@ -166,5 +166,5 @@ Defining a table of contents structure:
 
 Building joDoc's documentation with joDoc:
 
-	jodoc --output html -s --toc TOC_SAMPLE.md *.mdown && cp css/* html/
+	jodoc --output html -s --toc TOC_SAMPLE.md *.mdown && cp css/* html/ && cp index.html html/
 
