@@ -1,0 +1,40 @@
+HTML Template
+=============
+
+joDoc allows for setting an HTML template to wrap around the text from the markdown blocks.
+
+Variables
+---------
+
+Currently, the only variables supported in the HTML template are `$body` and `$title`.
+
+The `$body` tag will be replaced with the body of the HTML output, and `$title` will be replaced with whatever
+
+is given to the `--title` option for joDoc, or "JoDoc" by default.
+
+By default, a "non-terrible" template is used, linking to the css stylesheets in the `samples/css` folder.
+
+Examples
+--------
+
+A simple example of a joDoc compatible template can be found in `samples/template.html`.
+
+	<html><head><title>$title</title></head><body>$body</body></html>
+
+The default template of joDoc is a little more advanced, and depends on `doc.css` and `docbody.css`, which can be found in `samples/css/`.
+
+	<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+	<html lang="en">
+	<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>$title</title>
+	<meta name="generator" content="joDoc">
+	<link rel="stylesheet" type="text/css" href="docbody.css">
+	<link rel="stylesheet" type="text/css" href="doc.css">
+	<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width">
+	<meta name="format-detection" content="false">
+	</head>
+	<body>
+	$body
+	</body>
+	</html>

@@ -13,7 +13,8 @@ joDoc Documentation
 
 - {ABOUT.mdown}
 - {README.mdown}
-- {css/}
+- {TEMPLATE.mdown}
+- {TOC.mdown}
 - License
 
 [Keyword Index](./_index.html)

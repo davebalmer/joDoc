@@ -45,3 +45,8 @@ Munging
 
 joDoc uses path name munging to root output HTML documents in a directory without accidentally overwriting files.
 Because of this, it may be hard to embed direct links into the Table of Contents file. Everything works much better if you just leave it to the autolinker.
+
+Example
+-------
+
+A good example of how to write a table of contents for joDoc can be found in `samples/TOC_SAMPLE.mdown`
