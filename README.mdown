@@ -135,7 +135,8 @@ Use
 
 - `filespec`
 
-  is one or more files to parse, wildcards are supported.
+  is one or more files to parse. Directories will be recursively handled.
+  > Note: No support for STDIN input at the moment. Use named pipes for now. Also, block devices like /dev/random are totally untested.
 
 
 Examples
