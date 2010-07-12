@@ -136,7 +136,8 @@ Use
 - `filespec`
 
   is one or more files to parse. Directories will be recursively handled.
-  > Note: No support for STDIN input at the moment. Use named pipes for now. Also, block devices like /dev/random are totally untested.
+  > Note: No support for STDIN input at the moment. Use named pipes for now.
+  Also, block devices like `/dev/random` are totally untested.
 
 
 Examples
@@ -162,4 +163,8 @@ Specifying files to parse:
 Defining a table of contents structure:
 
 	jodoc --toc ~/release.toc
+
+Building joDoc's documentation with joDoc:
+
+	jodoc --output html -s --toc TOC_SAMPLE.md *.mdown && cp css/* html/
 
