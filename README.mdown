@@ -6,9 +6,6 @@ frustration felt working with various documentation systems available. joDoc doe
 attempt to perform any special automation other than generating links, table of
 contents, an index, and of course rendered HTML for your documentation.
 
-> Note that joDoc is not ready for release, and some of the advanced features are still
-> in flux.
-
 Source code formatting
 ----------------------
 
