@@ -130,6 +130,14 @@ Use
 
   tells joDoc to filter output through SmartyPants.
 
+- `tidy`
+
+  tells joDoc to use the HTMLTidy prettifier.
+
+- `htmltidy string`
+
+  tells joDoc to use a specific HTMLTidy compatible prettifier
+
 - `filespec`
 
   is one or more files to parse. Directories will be recursively handled.
