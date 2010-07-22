@@ -372,6 +372,9 @@ sub main {
     else {
         my $tempout = join( "", values %processed );
         $tempout = html_head($tempout) . indexer;
+        if ($use_tidy) {
+            $tempout = tidy_pipe($tempout);
+        }
         if ($use_smartypants) {
             $tempout = smartypants_pipe($tempout);
         }
