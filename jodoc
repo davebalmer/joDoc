@@ -246,7 +246,11 @@ sub toclinker {
     push( @matching_h1s, @{ $files_to_h1s{$_} } ) for @matching_files;
     @matching_h1s = sort { lc($a) cmp lc($b) } @matching_h1s;
     $_ = $indent . '* ' . $_ . "\n" for @matching_h1s;
-    return join( "", @matching_h1s );
+
+	# escape _ characters to make markdown happy
+    my $match = join( "", @matching_h1s );
+	$match =~ s/\_/\\_/g;
+	return $match;
 }
 
 # munge output file names
