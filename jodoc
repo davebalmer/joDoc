@@ -247,10 +247,10 @@ sub toclinker {
     @matching_h1s = sort { lc($a) cmp lc($b) } @matching_h1s;
     $_ = $indent . '* ' . $_ . "\n" for @matching_h1s;
 
-	# escape _ characters to make markdown happy
+    # escape _ characters to make markdown happy
     my $match = join( "", @matching_h1s );
-	$match =~ s/\_/\\_/g;
-	return $match;
+    $match =~ s/\_/\\_/g;
+    return $match;
 }
 
 # munge output file names
@@ -354,7 +354,7 @@ sub main {
             if ( $processed{$file} =~ m{\w} ) {
 
                 # Don't wrap html files with <html> tags
-                unless ( $file =~ m{(\.html)\1$}i ) {
+                unless ( $file =~ m{\.htm[l]?\.html$}i ) {
                     $processed{$file} = html_head( $processed{$file} );
                 }
                 if ($use_tidy) {
