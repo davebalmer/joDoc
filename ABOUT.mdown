@@ -1,12 +1,41 @@
 About joDoc
 ===========
 
-JavaScript is an extremely expressive language which is often difficult to describe in
-terms of meta data and fields. Often, important information that needs to be documented
-just doesn't fit into a neat, tidy spot.
+JavaScript is an extremely expressive language which is often difficult to
+describe in terms of meta data and fields. Often, important information that
+needs to be documented just doesn't fit into a neat, tidy spot.
 
-jsdoc
------
+joDoc uses markdown as its core to provide simple, human-readable docs which
+it converts to HTML.
+
+
+Autolinker
+==========
+
+Basically, anything that ends up in an `<h1>` tag becomes a keyword that:
+
+- appears in the keyword index
+- is turned into a link wherever it is used in your documentation text
+- resolves in the TOC into links
+
+
+Injecting HTML Snippets
+=======================
+
+Markdown supports inline HTML, so your code comments and markdown files may
+have arbitrary bits of HTML in them.
+
+joDoc *also* supports HTML files, so you can use it to bring together docs
+built from other tools. The autolink feature works at the HTML level, so by
+just including HTML files in your doc project, they become linkable from other
+document pages automatically.
+
+
+Comparison
+==========
+
+vs. jsdoc
+---------
 
 jsdoc in its various incarnations and some of its spawn like yuidoc take the approach
 that "what is good for Java is good for JavaScript". All these flavors are based on
@@ -22,12 +51,13 @@ approach could help us make better code, are not in the spirit of embracing Java
 Why then do so many developers continue to use a _documentation_ tool which was born
 of the same well-meaning yet misguided logic of "let's pretend JavaScript is Java"?
 
-Natural Docs
-------------
+vs. Natural Docs
+----------------
 
 Excellent effort, but complex to set up and also tries to make a regimented system for
 documenting source code. It is extendable, but again, we have a documentation solution
 which is trying to force JavaScript into a more limited set of features.
+
 
 joDoc Process
 =============
@@ -83,3 +113,4 @@ This produces a bundle of files which can be used a couple of ways:
 3. Your own collection of files with some other organization means (which
    is trivial to do with pre-rendered HTML and the JSON document
    structure).
+
