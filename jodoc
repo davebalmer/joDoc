@@ -19,6 +19,7 @@ my $template_html = do { local $/; <DATA> };
 my %h1s           = ();
 my %processed     = ();
 my %files_to_h1s  = ();
+my @fileset = ();
 
 my $result = GetOptions(
     "markdown|m=s"  => \$markdown_bin,
@@ -257,18 +258,25 @@ sub toclinker {
 sub munge {
     my %munged_processed = ();
     for my $file ( keys %processed ) {
-        my @path_parts = split( m{/}, $file );
-        s{^\.+}{}g for @path_parts;
-
-        # Remove empty path parts, looks prettier that way
-        @path_parts = grep { $_ ne "" } @path_parts;
-        my $path = join( '_', @path_parts );
-        my $munged = $path . '.html';
-        $munged_processed{$munged} = $processed{$file};
+        $munged_processed{munge_filename($file)} = $processed{$file};
     }
     %processed = %munged_processed;
     return;
 }
+
+sub munge_filename {
+	my $file = shift;
+	
+    my @path_parts = split( m{/}, $file );
+    s{^\.+}{}g for @path_parts;
+
+    # Remove empty path parts, looks prettier that way
+    @path_parts = grep { $_ ne "" } @path_parts;
+    my $path = join( '_', @path_parts );
+    my $munged = $path . '.html';
+
+	return $munged;
+}	
 
 # Create a JSON output of the index
 sub index_to_json {
@@ -293,7 +301,7 @@ sub main {
       if ( $use_tidy && !( -x $tidy_bin ) );
 
     # Slurp all the files and process them
-    # recurse current directory if no input arguments
+    # recurse current directory if no input arguments	
     my @files = @ARGV;
     @files = glob("./*") unless ( $ARGV[0] );
     for my $file (@files) {
@@ -322,6 +330,7 @@ sub main {
                 $content = markdown_pipe($content);
             }
             $processed{$file} = $content;
+			push(@fileset, munge_filename($file));
         }
     }
 
@@ -374,7 +383,12 @@ sub main {
 
     # Print to stdout
     else {
-        my $tempout = join( "", values %processed );
+		my $tempout = '';
+		
+		for my $i (@fileset) {
+			$tempout .= $processed{$i};
+		}
+#        my $tempout = join( "", values %processed );
         $tempout = html_head($tempout) . indexer;
         if ($use_tidy) {
             $tempout = tidy_pipe($tempout);
